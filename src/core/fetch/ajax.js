@@ -1,6 +1,30 @@
 /* eslint-disable no-unused-vars */
+import Cookies from 'js-cookie';
 import progressbar from '../render/progressbar';
-import { noop, hasOwn } from '../util/core';
+import { hasOwn, noop } from '../util/core';
+
+const TokenKey = 'xzzh_doc_token';
+const RefTokenKey = 'xzzh_doc_refsh_token';
+
+export function getToken() {
+  return Cookies.get(TokenKey);
+}
+
+export function setRefToken(token) {
+  return Cookies.set(RefTokenKey, token);
+}
+
+export function getRefToken() {
+  return Cookies.get(RefTokenKey);
+}
+
+export function setToken(token) {
+  return Cookies.set(TokenKey, token);
+}
+
+export function setKv(key, value) {
+  return Cookies.set(key, value);
+}
 
 const cache = {};
 
@@ -29,7 +53,8 @@ export function get(url, hasBar = false, headers = {}) {
       xhr.setRequestHeader(i, headers[i]);
     }
   }
-
+  setKv('last_url', window.location.href);
+  xhr.setRequestHeader('Authorization', getToken());
   xhr.send();
 
   return {
@@ -52,6 +77,9 @@ export function get(url, hasBar = false, headers = {}) {
 
       on('error', error);
       on('load', ({ target }) => {
+        if (target.status === 401) {
+          window.location.href = `https://***.****.cn/login?redirectUrl=https://**.**.com.cn`;
+        }
         if (target.status >= 400) {
           error(target);
         } else {
